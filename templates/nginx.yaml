@@ -1,0 +1,155 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{ include "invoice-ninja.fullname" . }}-nginx"
+  labels:
+    {{- include "invoice-ninja.labels" . | nindent 4 }}
+    app: nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "invoice-ninja.selectorLabels" . | nindent 6 }}
+      app: nginx 
+  template:
+    metadata:
+      labels:
+        {{- include "invoice-ninja.selectorLabels" . | nindent 8 }}
+        app: nginx
+    spec:
+      containers:
+        - image: "{{ .Values.apps.nginx.image.repo }}:{{ .Values.apps.nginx.image.tag }}"
+          name: nginx
+          {{- with .Values.apps.nginx.env }}
+          env:
+          {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+            - name: data
+              mountPath: /var/www/app/public
+              subPath: public
+            - name: data
+              mountPath: /var/www/app/storage
+              subPath: storage
+            - name: data
+              mountPath: /var/www/app/public/logo
+              subPath: logo
+      volumes:
+        - name: nginx-config
+          configMap:
+            name: "{{ include "invoice-ninja.fullname" . }}-nginx"
+        - name: data
+          persistentVolumeClaim:
+            claimName: "{{ include "invoice-ninja.fullname" . }}-data"
+
+---
+
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: "{{ include "invoice-ninja.fullname" . }}-nginx"
+  labels:
+    {{- include "invoice-ninja.labels" . | nindent 4 }}
+    app: nginx
+data:
+  nginx.conf: |
+    user www-data;
+
+    events {
+      worker_connections 768;
+    }
+
+    http {
+        upstream backend {
+            server {{ include "invoice-ninja.fullname" . }}-invoice:9000;
+        }
+        include /etc/nginx/mime.types;
+        default_type application/octet-stream;
+        gzip on;
+        gzip_disable "msie6";
+
+        server {
+            listen      80 default;
+            server_name _;
+
+            root /var/www/app/public;
+
+            index index.php;
+
+            charset utf-8;
+
+            location / {
+                try_files $uri $uri/ /index.php?$query_string;
+            }
+
+            location = /favicon.ico { access_log off; log_not_found off; }
+            location = /robots.txt  { access_log off; log_not_found off; }
+
+            sendfile off;
+
+            location ~ \.php$ {
+                fastcgi_split_path_info ^(.+\.php)(/.+)$;
+                fastcgi_pass backend;
+                fastcgi_index index.php;
+                include fastcgi_params;
+                fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+                fastcgi_intercept_errors on;
+                fastcgi_buffer_size 16k;
+                fastcgi_buffers 4 16k;
+            }
+
+            location ~ /\.ht {
+                deny all;
+            }
+        }
+    }
+
+---
+{{- $dot := . }}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: "{{ include "invoice-ninja.fullname" . }}-nginx"
+  labels:
+    {{- include "invoice-ninja.labels" . | nindent 4 }}
+    app: nginx
+spec:
+spec:
+  tls:
+  - secretName: "{{ include "invoice-ninja.fullname" . }}-certificates"
+    hosts:
+{{- range .Values.hostnames }}
+    - "{{ . }}"
+{{- end }}
+{{- range .Values.hostnames }}
+  rules:
+  - host: "{{ . }}"
+    http:
+      paths:
+      - path: "/"
+        backend:
+          serviceName: "{{ include "invoice-ninja.fullname" $dot }}-nginx"
+          servicePort: 80
+{{- end }}
+
+---
+
+kind: Service
+apiVersion: v1
+metadata:
+  name: "{{ include "invoice-ninja.fullname" . }}-nginx"
+  labels:
+    {{- include "invoice-ninja.labels" . | nindent 4 }}
+    app: nginx
+spec:
+  selector:
+    {{- include "invoice-ninja.selectorLabels" . | nindent 4 }}
+    app: nginx
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+

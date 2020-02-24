@@ -1,0 +1,55 @@
+invoiceVersion: "4.5.17"
+hostnames: 
+  - invoice.example.com
+certmanager:
+  issuerType: ClusterIssuer
+  issuerName: letsencrypt-stage
+storage:
+  storageClassName: hostpath
+  size: 2Gi
+apps:
+  mysql:
+    image:
+      repo: mysql
+      tag: 5
+    env:
+      - name: MYSQL_DATABASE
+        value: "ninja"
+      - name: MYSQL_ROOT_PASSWORD
+        value: "ninja"
+  nginx:
+    image:
+      repo: nginx
+      tag: "1.17.8"
+  invoice:
+    image:
+      repo: invoiceninja/invoiceninja
+    env:
+      - name: APP_ENV
+        value: 'development'
+      - name: APP_DEBUG
+        value: '1'
+      - name: APP_URL
+        value: 'http://localhost:8000'
+      - name: APP_KEY
+        value: 'Needtobechanged'
+      - name: APP_CIPHER
+        value: 'AES-256-CBC'
+      - name: TRUSTED_PROXIES
+        value: '0.0.0.0/0'
+      - name: DB_TYPE
+        value: 'mysql'
+      - name: DB_USERNAME
+        value: 'root'
+      - name: DB_PASSWORD
+        value: 'ninja'
+      - name: DB_DATABASE
+        value: 'ninja'
+      - name: MAIL_HOST
+        value: mailserver
+      - name: MAIL_DRIVER
+        value: smtp
+      - name: MAIL_FROM_NAME
+        value: 'InvoiceNinja'
+      - name: MAIL_FROM_ADDRESS
+        value: 'finance@example.com'

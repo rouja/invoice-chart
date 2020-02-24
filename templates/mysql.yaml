@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{ include "invoice-ninja.fullname" . }}-mysql"
+  labels:
+    {{- include "invoice-ninja.labels" . | nindent 4 }}
+    app: mysql 
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "invoice-ninja.selectorLabels" . | nindent 6 }}
+      app: mysql 
+  template:
+    metadata:
+      labels:
+        {{- include "invoice-ninja.selectorLabels" . | nindent 8 }}
+        app: mysql 
+    spec:
+      containers:
+        - image: "{{ .Values.apps.mysql.image.repo }}:{{ .Values.apps.mysql.image.tag }}"
+          name: mysql
+          args: ['--default-authentication-plugin=mysql_native_password']
+          {{- with .Values.apps.mysql.env }}
+          env:
+          {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+          - mountPath: /var/lib/mysql
+            name: data
+            subPath: mysql
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: "{{ include "invoice-ninja.fullname" . }}-data"
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: "{{ include "invoice-ninja.fullname" . }}-mysql"
+  labels:
+    {{- include "invoice-ninja.labels" . | nindent 4 }}
+    app: mysql 
+spec:
+  selector:
+    {{- include "invoice-ninja.selectorLabels" . | nindent 4 }}
+    app: mysql 
+  ports:
+    - name: mysql
+      port: 3306
+      targetPort: 3306
