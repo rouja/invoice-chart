@@ -32,7 +32,7 @@ apps:
       - name: APP_ENV
         value: 'production' # production or development
       - name: APP_DEBUG
-        value: 'false' # false or true
+        value: 1 # 1 or 0
       - name: APP_URL
         value: 'http://localhost:8000'
       - name: APP_KEY
