@@ -31,10 +31,6 @@ apps:
     env:
       - name: APP_ENV
         value: 'production' # production or development
-      - name: APP_DEBUG
-        value: 1 # 1 or 0
-      - name: APP_URL
-        value: 'http://localhost:8000'
       - name: APP_KEY
         value: 'Needtobechanged' # This key need to be change !!! This one will not work !
       - name: APP_CIPHER
@@ -43,17 +39,7 @@ apps:
         value: '0.0.0.0/0' # Need to be adapt to your environment. This value is too open for production environment.
       - name: DB_TYPE
         value: 'mysql'
-      - name: DB_USERNAME
-        value: 'ninja'
-      - name: DB_PASSWORD
-        value: 'ninjapass' # Should be the same as MYSQL_PASSWORD
-      - name: DB_DATABASE
-        value: 'ninja'
-      - name: MAIL_HOST
-        value: mailserver
-      - name: MAIL_DRIVER
-        value: smtp
-      - name: MAIL_FROM_NAME
-        value: 'InvoiceNinja'
-      - name: MAIL_FROM_ADDRESS
-        value: 'finance@example.com'
+      - name: GOOGLE_MAPS_ENABLED
+        value: 'false'
+      - name: LOCK_SENT_INVOICES
+        value: 'true'
