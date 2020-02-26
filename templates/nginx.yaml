@@ -116,6 +116,10 @@ metadata:
   labels:
     {{- include "invoice-ninja.labels" . | nindent 4 }}
     app: nginx
+  {{- if .Values.ingressClass }}
+  annotations:
+    kubernetes.io/ingress.class: "{{ .Values.ingressClass }}"
+  {{- end}}
 spec:
 spec:
   tls:

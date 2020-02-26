@@ -1,4 +1,5 @@
 invoiceVersion: "4.5.17"
+#ingressClass: "private" #Uncomment this line if you want to target a specific ingress
 hostnames: 
   - invoice.example.com
 certmanager:
