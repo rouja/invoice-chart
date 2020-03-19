@@ -20,12 +20,16 @@ spec:
       containers:
         - image: {{ .Values.apps.invoice.image.repo }}:{{ default .Values.invoiceVersion .Values.apps.invoice.image.tag }}
           name: invoice
+          args:
+            - "/bin/bash"
+            - "-c"
+            - "cp env .env && php-fpm"
           volumeMounts:
             - name: phpfpm
               mountPath: /usr/local/etc/php-fpm.conf
               subPath: php-fpm.conf
             - name: env
-              mountPath: /var/www/app/.env
+              mountPath: /var/www/app/env
               subPath: env
             - mountPath: /var/www/app/public
               name: data
