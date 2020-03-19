@@ -17,11 +17,11 @@ apps:
       - name: MYSQL_DATABASE
         value: "ninja"
       - name: MYSQL_ROOT_PASSWORD
-        value: "kljlknesLKHJkkjsdf" # Need to be changed for production environment
+        value: "Needtobechanged" # Need to be changed for production environment
       - name: MYSQL_USER
         value: "ninja"
       - name: MYSQL_PASSWORD
-        value: "ninjapass" # Need to be changed for produciton environment
+        value: "Needtobechanged" # Need to be changed for produciton environment
   nginx:
     image:
       repo: nginx
@@ -30,17 +30,17 @@ apps:
     image:
       repo: invoiceninja/invoiceninja
     env:
-      - name: APP_ENV
-        value: 'production' # production or development
-      - name: APP_KEY
-        value: 'Needtobechanged' # This key need to be change !!! This one will not work !
-      - name: APP_CIPHER
-        value: 'AES-256-CBC'
-      - name: TRUSTED_PROXIES
-        value: '0.0.0.0/0' # Need to be adapt to your environment. This value is too open for production environment.
-      - name: DB_TYPE
-        value: 'mysql'
-      - name: GOOGLE_MAPS_ENABLED
-        value: 'false'
-      - name: LOCK_SENT_INVOICES
-        value: 'true'
+      APP_ENV=production
+      APP_DEBUG=false
+      APP_URL=https://invoice.example.com/
+      APP_KEY=Needtobechanged
+      APP_CIPHER=AES-256-CBC
+      APP_LOCALE=fr
+      DB_TYPE=mysql
+      DB_STRICT=false
+      DB_DATABASE=ninja
+      DB_USERNAME=ninja
+      DB_PASSWORD=Needtobechanged
+      GOOGLE_MAPS_ENABLED=false
+      LOCK_SENT_INVOICES=true
+      TRUSTED_PROXIES=0.0.0.0/0

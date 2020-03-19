@@ -20,16 +20,13 @@ spec:
       containers:
         - image: {{ .Values.apps.invoice.image.repo }}:{{ default .Values.invoiceVersion .Values.apps.invoice.image.tag }}
           name: invoice
-          {{- with .Values.apps.invoice.env }}
-          env:
-          {{- toYaml . | nindent 12 }}
-          {{- end }}
-            - name: DB_HOST
-              value: {{ include "invoice-ninja.fullname" . }}-mysql
           volumeMounts:
             - name: phpfpm
               mountPath: /usr/local/etc/php-fpm.conf
               subPath: php-fpm.conf
+            - name: env
+              mountPath: /var/www/app/.env
+              subPath: env
             - mountPath: /var/www/app/public
               name: data
               subPath: public
@@ -43,6 +40,9 @@ spec:
         - name: phpfpm
           configMap:
             name: "{{ include "invoice-ninja.fullname" . }}-phpfpm"
+        - name: env
+          configMap:
+            name: "{{ include "invoice-ninja.fullname" . }}-env"
         - name: data
           persistentVolumeClaim:
             claimName: "{{ include "invoice-ninja.fullname" . }}-data"
@@ -202,3 +202,15 @@ data:
     ;  - /usr/local otherwise
     include=etc/php-fpm.d/*.conf
 
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: "{{ include "invoice-ninja.fullname" . }}-env"
+  labels:
+    {{- include "invoice-ninja.labels" . | nindent 4 }}
+    app: invoice
+data:
+  env: |
+    DB_HOST={{ include "invoice-ninja.fullname" . }}-mysql
+    {{- .Values.apps.invoice.env | nindent 4 }}
